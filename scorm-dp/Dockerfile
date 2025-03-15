@@ -1,23 +1,28 @@
-# Use the official Node.js image as the base image
-FROM node:20-alpine
+# Step 1: Build Stage
+FROM node:20-alpine AS builder
 
-# Set the working directory inside the container
-WORKDIR /app
+WORKDIR /usr/src
+COPY ./*.json ./
+COPY ./src/ ./
 
-# Copy package.json and package-lock.json files into the working directory
-COPY package*.json ./
+RUN npm i
 
-# Install dependencies, including devDependencies to perform a build
-RUN npm install
+RUN ls -la /tmp
+RUN cat tsconfig.json
 
-# Copy the entire project directory into the container
-COPY . .
 
-# Build the TypeScript code
 RUN npm run build
 
-# Expose the port the app runs on
-EXPOSE 3000
+# Step 2: Run Stage
 
-# Start the application in production mode
-CMD ["npm", "start"]
+FROM node:20-alpine
+
+COPY --from=builder /usr/src/dist ./
+COPY --from=builder /usr/src/package.json ./
+COPY --from=builder /usr/src/package-lock.json ./
+
+
+RUN npm ci --production
+
+
+CMD ["node", "server.js"]

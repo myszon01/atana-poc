@@ -1,10 +1,10 @@
-import { scormCourseApi, scormRegistrationApi } from './scormClient';
+import { scormCourseApi, scormRegistrationApi } from './client';
 import {
     CourseResponse,
     courseSchemaResponse,
     RegistrationResponse,
     registrationsSchemaResponse
-} from "./scormTypes";
+} from "./types";
 import {ZodError} from "zod";
 
 

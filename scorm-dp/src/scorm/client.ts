@@ -14,6 +14,5 @@ APP_NORMAL.username = APP_ID;
 APP_NORMAL.password = SECRET_KEY;
 
 
-export const scormClient = ScormCloud;
 export const scormCourseApi = new ScormCloud.CourseApi();
 export const scormRegistrationApi = new ScormCloud.RegistrationApi();

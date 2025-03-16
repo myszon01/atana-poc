@@ -1,14 +1,14 @@
 import { scormCourseApi, scormRegistrationApi } from './client';
 import {
-    CourseResponse,
-    courseSchemaResponse,
-    RegistrationResponse,
-    registrationsSchemaResponse
+    ScormCourseResponse,
+    scormCourseSchemaResponse,
+    ScormRegistrationResponse,
+    scormRegistrationsSchemaResponse
 } from "./types";
 import {ZodError} from "zod";
 
 
-export async function fetchCourses(more?: string): Promise<CourseResponse> {
+export async function fetchCourses(more?: string): Promise<ScormCourseResponse> {
     try {
         return await new Promise((resolve, reject) => {
             scormCourseApi.getCourses({
@@ -21,7 +21,7 @@ export async function fetchCourses(more?: string): Promise<CourseResponse> {
                 }
 
                 try {
-                    resolve(courseSchemaResponse.parse({
+                    resolve(scormCourseSchemaResponse.parse({
                         courses: data.courses,
                         more: data.more,
                     }));
@@ -38,12 +38,13 @@ export async function fetchCourses(more?: string): Promise<CourseResponse> {
 }
 
 
-export async function fetchRegistrations(courseId?: string, more?: string): Promise<RegistrationResponse> {
+export async function fetchRegistrations(courseId?: string, more?: string): Promise<ScormRegistrationResponse> {
     try {
         return await new Promise((resolve, reject) => {
             scormRegistrationApi.getRegistrations({
                 includeRuntime: true,
                 includeChildResults: true,
+                includeInteractionsAndObjectives: true,
                 courseId,
                 more
             }, (error: any, data: any) => {
@@ -53,7 +54,7 @@ export async function fetchRegistrations(courseId?: string, more?: string): Prom
                 }
 
                 try {
-                    resolve(registrationsSchemaResponse.parse({
+                    resolve(scormRegistrationsSchemaResponse.parse({
                         registrations: data.registrations,
                         more: data.more,
                     }));
@@ -64,7 +65,7 @@ export async function fetchRegistrations(courseId?: string, more?: string): Prom
             });
         });
     } catch (error) {
-        console.error('Error fetching courses:', error);
+        console.error('Error fetching registrations:', error);
         throw error;
     }
 }

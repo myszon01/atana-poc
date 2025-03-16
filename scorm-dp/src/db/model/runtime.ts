@@ -1,7 +1,8 @@
 import {z} from "zod";
 
 const runtime = z.object({
-    id: z.string(),
+    id: z.number().optional(),
+    registration_activity_id: z.number(),
     completion_status: z.string(),
     credit: z.string(),
     entry: z.string(),
@@ -10,7 +11,7 @@ const runtime = z.object({
     learner_preference_lang: z.string(),
     learner_preference_delivery_speed: z.number(),
     learner_preference_audio_captioning: z.number(),
-    location: z.string(),
+    location: z.string().optional(),
     mode: z.string(),
     progress_measure: z.string(),
     score_scaled: z.string(),
@@ -21,3 +22,5 @@ const runtime = z.object({
     time_tracked: z.string(),
     runtime_success_status: z.enum(["UNKNOWN", "PASSED", "FAILED"]),
 })
+
+export type Runtime = z.infer<typeof runtime>;

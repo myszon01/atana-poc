@@ -1,18 +1,16 @@
 import {z} from "zod";
 
 const registration_activity = z.object({
-    id: z.string(),
+    id: z.string().optional(),
     registration_id: z.string(),
     activity_id: z.string(),
-    runtime_id: z.string(),
-    parent_id: z.string().optional(),
 
     attempts: z.number(),
-    activityCompletion: z.enum(["UNKNOWN", "COMPLETED", "INCOMPLETE"]),
-    activitySuccess: z.enum(["UNKNOWN", "PASSED", "FAILED"]),
-    score: z.object({ scaled: z.number() }).default({scaled: 0}),
-    timeTracked: z.string(),
-    completionAmount: z.object({ scaled: z.number() }),
+    activity_completion: z.enum(["UNKNOWN", "COMPLETED", "INCOMPLETE"]),
+    activity_success: z.enum(["UNKNOWN", "PASSED", "FAILED"]),
+    score_scaled: z.number(),
+    time_tracked: z.string(),
+    completion_amount_scaled: z.number(),
     suspended: z.boolean(),
 
     static_completion_threshold: z.string(),
@@ -22,3 +20,5 @@ const registration_activity = z.object({
     static_scaled_passing_score_used: z.boolean(),
     static_time_limit_action: z.string(),
 })
+
+export type RegistrationActivity = z.infer<typeof registration_activity>;

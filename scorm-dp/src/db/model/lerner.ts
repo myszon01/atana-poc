@@ -1,8 +1,10 @@
 import {z} from "zod";
 
-const lerner = z.object({
+const learner = z.object({
     id: z.string(),
     email: z.string().optional(),
-    firstName: z.string(),
-    lastName: z.string(),
+    first_name: z.string(),
+    last_name: z.string(),
 })
+
+export type Learner = z.infer<typeof learner>;

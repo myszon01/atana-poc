@@ -1,39 +1,45 @@
 import { z } from "zod";
 
-
-const rootActivitySchema = z.object({
-    externalIdentifier: z.string(),
-    itemIdentifier: z.string(),
-    resourceIdentifier: z.string(),
-    activityType: z.enum(["UNKNOWN", "AGGREGATION", "SCO", "ASSET", "OBJECTIVE"]), // Update valid activity types as needed
-    href: z.string(),
-    scaledPassingScore: z.string().optional(),
-    title: z.string(),
-    children: z.array(z.lazy(():any => rootActivitySchema)).optional(), // Allows an array where `null` values are permitted
+const dateSchema = z.string().transform((val) => {
+    const parsedDate = new Date(val);
+    return isNaN(parsedDate.getTime()) ? undefined : parsedDate;
 });
 
 
-// Define the schema for a single "course"
-const courseSchema = z.object({
-    id: z.string(), // Unique course ID
-    title: z.string(), // Title of the course
-    created: z.date(), // Date string for creation time
-    updated: z.date(), // Date string for update time
-    version: z.number(), // Version number of the course
-    activityId: z.string(), // Identifier for the activity
-    courseLearningStandard: z.string(), // Learning standard (e.g., SCORM12)
-    rootActivity: rootActivitySchema,
+export const scornActivitySchema = z.object({
+    externalIdentifier: z.string(),
+    itemIdentifier: z.string(),
+    resourceIdentifier: z.string(),
+    activityType: z.enum(["UNKNOWN", "AGGREGATION", "SCO", "ASSET", "OBJECTIVE"]),
+    href: z.string(),
+    scaledPassingScore: z.string().optional(),
+    title: z.string(),
+    children: z.array(z.lazy(():any => scornActivitySchema)).optional(),
+});
+export type ScormActivity = z.infer<typeof scornActivitySchema>;
+
+
+const scormCourseSchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    created: z.date(),
+    updated: z.date(),
+    version: z.number(),
+    activityId: z.string(),
+    courseLearningStandard: z.string(),
+    rootActivity: scornActivitySchema,
     metadata: z.object({
         description: z.string().optional(),
     }).optional(),
 });
+export type ScormCourse = z.infer<typeof scormCourseSchema>;
 // Define the schema for the response
-export const courseSchemaResponse = z.object({
-    courses: z.array(courseSchema),
+export const scormCourseSchemaResponse = z.object({
+    courses: z.array(scormCourseSchema),
     more: z.string().optional()
 });
-// export type Course = z.infer<typeof courseSchema>;
-export type CourseResponse = z.infer<typeof courseSchemaResponse>;
+// export type Course = z.infer<typeof scormCourseSchema>;
+export type ScormCourseResponse = z.infer<typeof scormCourseSchemaResponse>;
 
 
 
@@ -45,19 +51,20 @@ const commentsSchema = z.object({
     dateTime: z.string(),
 });
 
-const runtimeInteractionsSchema = z.object({
+const scormRuntimeInteractionsSchema = z.object({
     id: z.string(),
     type: z.enum(["TrueFalse", "Choice", "FillIn", "LongFillIn", "Matching", "Performance", "Sequencing", "Likert", "Numeric", "Other"]),
     objectives: z.array(z.string()),
-    timestamp: z.string(),
-    timestampUtc: z.string(),
+    timestamp: dateSchema.optional(),
+    timestampUtc: dateSchema.optional(),
     correctResponses: z.array(z.string()),
     weighting: z.string(),
     learnerResponse: z.string(),
     result: z.string(),
     latency: z.string(),
-    description: z.string(),
+    description: z.string().optional(),
 });
+export type ScormRuntimeInteraction = z.infer<typeof scormRuntimeInteractionsSchema>;
 
 const runtimeObjectivesSchema = z.object({
     id: z.string(),
@@ -71,7 +78,7 @@ const runtimeObjectivesSchema = z.object({
     description: z.string(),
 });
 
-const runtimeSchema = z.object({
+const scormRuntimeSchema = z.object({
     completionStatus: z.string(),
     credit: z.string(),
     entry: z.string(),
@@ -95,14 +102,15 @@ const runtimeSchema = z.object({
     suspendData: z.string(),
     learnerComments: z.array(commentsSchema),
     lmsComments: z.array(commentsSchema),
-    runtimeInteractions: z.array(runtimeInteractionsSchema).optional(),
+    runtimeInteractions: z.array(scormRuntimeInteractionsSchema).optional(),
     runtimeObjectives: z.array(runtimeObjectivesSchema).optional(),
 });
+export type ScormRuntime = z.infer<typeof scormRuntimeSchema>;
 
 
 
 
-const activityDetailsSchema = z.object({
+const scormRegistrationActivityDetailsSchema = z.object({
     id: z.string(),
     title: z.string(),
     attempts: z.number(),
@@ -112,7 +120,7 @@ const activityDetailsSchema = z.object({
     timeTracked: z.string(),
     completionAmount: z.object({ scaled: z.number() }),
     suspended: z.boolean(),
-    children: z.array(z.lazy((): any => activityDetailsSchema)),
+    children: z.array(z.lazy((): any => scormRegistrationActivityDetailsSchema)),
     staticProperties: z.object({
         completionThreshold: z.string(),
         launchData: z.string(),
@@ -121,11 +129,19 @@ const activityDetailsSchema = z.object({
         scaledPassingScoreUsed: z.boolean(),
         timeLimitAction: z.string(),
     }),
-    runtime: runtimeSchema.optional(),
+    runtime: scormRuntimeSchema.optional(),
 });
+export type ScormRegistrationActivityDetails = z.infer<typeof scormRegistrationActivityDetailsSchema>;
 
+const scormLernerSchema = z.object({
+    id: z.string(),
+    email: z.string().optional(),
+    firstName: z.string(),
+    lastName: z.string(),
+})
+export type ScormLearner = z.infer<typeof scormLernerSchema>;
 
-const registrationSchema = z.object({
+const sormRegistrationSchema = z.object({
     id: z.string(),
     instance: z.number(),
     updated: z.date(),
@@ -143,22 +159,17 @@ const registrationSchema = z.object({
         title: z.string(),
         version: z.number(),
     }),
-    learner: z.object({
-        id: z.string(),
-        email: z.string().optional(),
-        firstName: z.string(),
-        lastName: z.string(),
-    }),
+    learner: scormLernerSchema,
     tags: z.array(z.string()),
-    activityDetails: activityDetailsSchema,
+    activityDetails: scormRegistrationActivityDetailsSchema,
 });
 
-export const registrationsSchemaResponse = z.object({
-    registrations: z.array(registrationSchema),
+export const scormRegistrationsSchemaResponse = z.object({
+    registrations: z.array(sormRegistrationSchema),
     more: z.string().optional(),
 });
-export type Registration = z.infer<typeof registrationSchema>;
-export type RegistrationResponse = z.infer<typeof registrationsSchemaResponse>;
+export type ScormRegistration = z.infer<typeof sormRegistrationSchema>;
+export type ScormRegistrationResponse = z.infer<typeof scormRegistrationsSchemaResponse>;
 
 
 

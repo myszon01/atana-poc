@@ -11,3 +11,5 @@ const course = z.object({
     course_learning_standard: z.string(),
     description: z.string().optional(),
 })
+
+export type Course = z.infer<typeof course>;
